@@ -35,17 +35,17 @@ id = "io.paketo.stacks.tiny"
 [[stacks]]
 id = "*"
 
-# [[metadata.dependencies]]
-# id      = ""
-# name    = ""
-# version = ""
-# uri     = ""
-# sha256  = ""
-# stacks  = [ "io.buildpacks.stacks.bionic" ]
+[[metadata.dependencies]]
+id      = "syft"
+name    = "Syft"
+version = "0.29.0"
+uri     = "https://github.com/anchore/syft/releases/download/v0.29.0/syft_0.29.0_linux_amd64.tar.gz"
+sha256  = "74a9becd5ccb4c02de99050a632e7bfc72176d5e4e844093b1e2c5bedfb45888"
+stacks  = [ "io.buildpacks.stacks.bionic", "io.paketo.stacks.tiny", "*" ]
 
-#   [[metadata.dependencies.licenses]]
-#   type = "<TYPE>"
-#   uri  = "<URI>"
+  [[metadata.dependencies.licenses]]
+  type = "Apache-2.0"
+  uri  = "https://github.com/anchore/syft/blob/main/LICENSE"
 
 [metadata]
 pre-package   = "scripts/build.sh"
