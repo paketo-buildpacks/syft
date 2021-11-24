@@ -182,4 +182,3 @@ jobs:
                 id: paketo-buildpacks/syft
                 token: ${{ secrets.JAVA_GITHUB_TOKEN }}
                 version: ${{ steps.version.outputs.version }}
-
