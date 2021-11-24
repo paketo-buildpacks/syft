@@ -19,7 +19,7 @@ id       = "paketo-buildpacks/syft"
 name     = "Paketo Syft Buildpack"
 version  = "{{.version}}"
 homepage = "https://github.com/paketo-buildpacks/syft"
-description = "A Cloud Native Buildpack that contributes the Syft CLI and populates SBoM information"
+description = "A Cloud Native Buildpack that contributes the Syft CLI which can be used to generate SBoM information"
 keywords    = ["bom", "sbom", "bill of materials", "syft"]
 
 [[buildpack.licenses]]

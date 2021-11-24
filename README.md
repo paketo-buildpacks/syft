@@ -1,6 +1,6 @@
 # `gcr.io/paketo-buildpacks/syft`
 
-The Paketo Syft Buildpack is a Cloud Native Buildpack that contributes the Syft CLI and populates SBoM information the image.
+The Paketo Syft Buildpack is a Cloud Native Buildpack that contributes the Syft CLI which can be used to generate SBoM information.
 
 ## Behavior
 
