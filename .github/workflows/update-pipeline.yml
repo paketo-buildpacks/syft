@@ -82,3 +82,4 @@ jobs:
                 signoff: true
                 title: Bump pipeline from ${{ steps.pipeline.outputs.old-version }} to ${{ steps.pipeline.outputs.new-version }}
                 token: ${{ secrets.JAVA_GITHUB_TOKEN }}
+

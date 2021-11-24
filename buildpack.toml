@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-api = "0.6"
+api = "0.7"
 
 [buildpack]
 id       = "paketo-buildpacks/syft"
@@ -20,6 +20,7 @@ name     = "Paketo Syft Buildpack"
 version  = "{{.version}}"
 homepage = "https://github.com/paketo-buildpacks/syft"
 description = "A Cloud Native Buildpack that contributes the Syft CLI which can be used to generate SBoM information"
+sbom-formats = ["application/vnd.cyclonedx+json", "application/vnd.syft+json"]
 keywords    = ["bom", "sbom", "bill of materials", "syft"]
 
 [[buildpack.licenses]]
@@ -36,11 +37,13 @@ id = "io.paketo.stacks.tiny"
 id = "*"
 
 [[metadata.dependencies]]
+cpes    = ["cpe:2.3:a:anchore:syft:0.30.1:*:*:*:*:*:*:*"]
 id      = "syft"
 name    = "Syft"
-version = "0.29.0"
-uri     = "https://github.com/anchore/syft/releases/download/v0.29.0/syft_0.29.0_linux_amd64.tar.gz"
-sha256  = "74a9becd5ccb4c02de99050a632e7bfc72176d5e4e844093b1e2c5bedfb45888"
+purl    = "pkg:generic/anchore-syft@0.30.1"
+version = "0.30.1"
+uri     = "https://github.com/anchore/syft/releases/download/v0.30.1/syft_0.30.1_linux_amd64.tar.gz"
+sha256  = "96ec08b5f8311cd7927635f098b2f91ebc44d7035b3f99056ac6720b8bb26bc1"
 stacks  = [ "io.buildpacks.stacks.bionic", "io.paketo.stacks.tiny", "*" ]
 
   [[metadata.dependencies.licenses]]
