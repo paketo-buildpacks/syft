@@ -15,4 +15,3 @@ jobs:
             - uses: micnncim/action-label-syncer@v1
               env:
                 GITHUB_TOKEN: ${{ secrets.JAVA_GITHUB_TOKEN }}
-
