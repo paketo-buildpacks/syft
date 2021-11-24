@@ -56,7 +56,9 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 		syft, be := NewSyft(syftDependency, dc)
 
 		result.Layers = append(result.Layers, syft)
-		result.BOM.Entries = append(result.BOM.Entries, be)
+		if be.Name != "" {
+			result.BOM.Entries = append(result.BOM.Entries, be)
+		}
 	}
 
 	return result, nil

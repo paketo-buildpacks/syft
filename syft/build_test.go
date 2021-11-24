@@ -42,6 +42,14 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(err).NotTo(HaveOccurred())
 
 		ctx.Plan.Entries = append(ctx.Plan.Entries, libcnb.BuildpackPlanEntry{Name: "syft"})
+		ctx.StackID = "test-stack-id"
+	})
+
+	it.After(func() {
+		Expect(os.RemoveAll(ctx.Application.Path)).To(Succeed())
+	})
+
+	it("contributes Syft API <= 0.6", func() {
 		ctx.Buildpack.Metadata = map[string]interface{}{
 			"dependencies": []map[string]interface{}{
 				{
@@ -51,14 +59,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				},
 			},
 		}
-		ctx.StackID = "test-stack-id"
-	})
+		ctx.Buildpack.API = "0.6"
 
-	it.After(func() {
-		Expect(os.RemoveAll(ctx.Application.Path)).To(Succeed())
-	})
-
-	it("contributes Syft", func() {
 		result, err := build.Build(ctx)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -67,5 +69,28 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		Expect(result.BOM.Entries).To(HaveLen(1))
 		Expect(result.BOM.Entries[0].Name).To(Equal("syft"))
+	})
+
+	it("contributes Syft API >= 0.7", func() {
+		ctx.Buildpack.Metadata = map[string]interface{}{
+			"dependencies": []map[string]interface{}{
+				{
+					"id":      "syft",
+					"version": "0.29.0",
+					"stacks":  []interface{}{"test-stack-id"},
+					"cpes":    []interface{}{"cpe:2.3:a:anchore:syft:1.1.1:*:*:*:*:*:*:*"},
+					"purl":    "pkg:generic/anchore-syft@1.1.1?arch=amd64",
+				},
+			},
+		}
+		ctx.Buildpack.API = "0.7"
+
+		result, err := build.Build(ctx)
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(result.Layers).To(HaveLen(1))
+		Expect(result.Layers[0].Name()).To(Equal("syft"))
+
+		Expect(result.BOM.Entries).To(HaveLen(0))
 	})
 }
