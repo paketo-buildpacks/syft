@@ -15,3 +15,14 @@ docker_credentials:
 - registry: gcr.io
   username: _json_key
   password: ${{ secrets.JAVA_GCLOUD_SERVICE_ACCOUNT_KEY }}
+
+dependencies:
+- name:            Syft CLI
+  id:              syft
+  uses:            docker://ghcr.io/paketo-buildpacks/actions/github-release-dependency:main
+  with:
+    glob:       syft_.+_linux_amd64.tar.gz
+    owner:      anchore
+    repository: syft
+    tag_filter: v(0.*)
+    token:      ${{ secrets.JAVA_GITHUB_TOKEN }}
