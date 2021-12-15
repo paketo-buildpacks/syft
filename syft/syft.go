@@ -27,6 +27,8 @@ import (
 	"github.com/paketo-buildpacks/libpak/crush"
 )
 
+const UpdateCheckEnvVar = "SYFT_CHECK_FOR_APP_UPDATE"
+
 type Syft struct {
 	LayerContributor libpak.DependencyLayerContributor
 	Logger           bard.Logger
@@ -58,7 +60,9 @@ func (w Syft) Contribute(layer libcnb.Layer) (libcnb.Layer, error) {
 		if err := os.Symlink(filepath.Join(layer.Path, "syft"), filepath.Join(binDir, "syft")); err != nil {
 			return libcnb.Layer{}, fmt.Errorf("unable to symlink Syft\n%w", err)
 		}
-
+		// We should skip checking for version updates for syft. This causes timeouts and slowdowns
+		// in air-gapped environments.
+		layer.BuildEnvironment.Default(UpdateCheckEnvVar, "false")
 		return layer, nil
 	})
 }
