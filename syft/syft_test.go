@@ -17,6 +17,7 @@
 package syft_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -65,7 +66,7 @@ func testSyft(t *testing.T, context spec.G, it spec.S) {
 		Expect(layer.LayerTypes.Build).To(BeTrue())
 		Expect(layer.LayerTypes.Cache).To(BeTrue())
 		Expect(layer.LayerTypes.Launch).To(BeFalse())
-
+		Expect(layer.BuildEnvironment).To(HaveKeyWithValue(fmt.Sprintf("%s.default", syft.UpdateCheckEnvVar), "false"))
 		Expect(filepath.Join(layer.Path, "syft")).To(BeARegularFile())
 		Expect(filepath.Join(layer.Path, "bin", "syft")).To(BeAnExistingFile())
 	})
