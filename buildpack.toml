@@ -19,7 +19,7 @@ api = "0.7"
   homepage = "https://github.com/paketo-buildpacks/syft"
   id = "paketo-buildpacks/syft"
   keywords = ["bom", "sbom", "bill of materials", "syft"]
-  name = "Paketo Syft Buildpack"
+  name = "Paketo Buildpack for Syft"
   sbom-formats = ["application/vnd.cyclonedx+json", "application/vnd.syft+json"]
   version = "{{.version}}"
 
