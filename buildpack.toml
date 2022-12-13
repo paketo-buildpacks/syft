@@ -32,14 +32,14 @@ api = "0.7"
   pre-package = "scripts/build.sh"
 
   [[metadata.dependencies]]
-    cpes = ["cpe:2.3:a:anchore:syft:0.62.3:*:*:*:*:*:*:*"]
+    cpes = ["cpe:2.3:a:anchore:syft:0.63.0:*:*:*:*:*:*:*"]
     id = "syft"
     name = "Syft"
-    purl = "pkg:generic/anchore-syft@0.62.3"
-    sha256 = "80cea6e686c00c3e7b591bfa83a6e2364936400e93bd6413d26f0a58f3bf7782"
+    purl = "pkg:generic/anchore-syft@0.63.0"
+    sha256 = "b466f615aaaa1d865e129bb0c5f6d751ae3625993155178eebc3258a297343a7"
     stacks = ["io.buildpacks.stacks.bionic", "io.paketo.stacks.tiny", "*"]
-    uri = "https://github.com/anchore/syft/releases/download/v0.62.3/syft_0.62.3_linux_amd64.tar.gz"
-    version = "0.62.3"
+    uri = "https://github.com/anchore/syft/releases/download/v0.63.0/syft_0.63.0_linux_amd64.tar.gz"
+    version = "0.63.0"
 
     [[metadata.dependencies.licenses]]
       type = "Apache-2.0"
