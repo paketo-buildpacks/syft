@@ -1,0 +1,177 @@
+name: Create arm64 Package
+"on":
+    push:
+        branches:
+            - anthonydahanne-arm64-tests
+jobs:
+    create-arm64-package:
+        name: Create arm64 Package
+        runs-on:
+            - buildjet-4vcpu-ubuntu-2204-arm
+        steps:
+            - name: Docker login gcr.io
+              if: ${{ (github.event_name != 'pull_request' || ! github.event.pull_request.head.repo.fork) && (github.actor != 'dependabot[bot]') }}
+              uses: docker/login-action@v2
+              with:
+                password: ${{ secrets.GCR_PUSH_BOT_JSON_KEY }}
+                registry: gcr.io
+                username: _json_key
+            - name: Docker login docker.io
+              if: ${{ (github.event_name != 'pull_request' || ! github.event.pull_request.head.repo.fork) && (github.actor != 'dependabot[bot]') }}
+              uses: docker/login-action@v2
+              with:
+                password: ${{ secrets.PAKETO_BUILDPACKS_DOCKERHUB_PASSWORD }}
+                registry: docker.io
+                username: ${{ secrets.PAKETO_BUILDPACKS_DOCKERHUB_USERNAME }}
+            - uses: actions/setup-go@v4
+              with:
+                go-version: "1.20"
+            - name: Install create-package
+              run: |
+                #!/usr/bin/env bash
+
+                set -euo pipefail
+
+                go install -ldflags="-s -w" github.com/paketo-buildpacks/libpak/cmd/create-package@latest
+            - name: Install crane
+              run: |
+                #!/usr/bin/env bash
+
+                set -euo pipefail
+
+                echo "Installing crane ${CRANE_VERSION}"
+
+                mkdir -p "${HOME}"/bin
+                echo "${HOME}/bin" >> "${GITHUB_PATH}"
+
+                curl \
+                  --show-error \
+                  --silent \
+                  --location \
+                  "https://github.com/google/go-containerregistry/releases/download/v${CRANE_VERSION}/go-containerregistry_Linux_arm64.tar.gz" \
+                | tar -C "${HOME}/bin" -xz crane
+              env:
+                CRANE_VERSION: 0.8.0
+            - name: Install pack
+              run: |
+                #!/usr/bin/env bash
+
+                set -euo pipefail
+
+                echo "Installing pack ${PACK_VERSION}"
+
+                mkdir -p "${HOME}"/bin
+                echo "${HOME}/bin" >> "${GITHUB_PATH}"
+
+                curl \
+                  --location \
+                  --show-error \
+                  --silent \
+                  "https://github.com/buildpacks/pack/releases/download/v${PACK_VERSION}/pack-v${PACK_VERSION}-linux-arm64.tgz" \
+                | tar -C "${HOME}"/bin -xz pack
+              env:
+                PACK_VERSION: 0.29.0
+            - name: Enable pack Experimental
+              if: ${{ false }}
+              run: |
+                #!/usr/bin/env bash
+
+                set -euo pipefail
+
+                echo "Enabling pack experimental features"
+
+                mkdir -p "${HOME}"/.pack
+                echo "experimental = true" >> "${HOME}"/.pack/config.toml
+            - uses: actions/checkout@v3
+            - if: ${{ false }}
+              uses: actions/cache@v3
+              with:
+                key: ${{ runner.os }}-go-${{ hashFiles('**/buildpack.toml', '**/package.toml') }}
+                path: |-
+                    ${{ env.HOME }}/.pack
+                    ${{ env.HOME }}/carton-cache
+                restore-keys: ${{ runner.os }}-go-
+            - name: Create Package
+              run: |
+                #!/usr/bin/env bash
+
+                set -euo pipefail
+
+                # With Go 1.20, we need to set this so that we produce statically compiled binaries
+                #
+                # Starting with Go 1.20, Go will produce binaries that are dynamically linked against libc
+                #   which can cause compatibility issues. The compiler links against libc on the build system
+                #   but that may be newer than on the stacks we support.
+                export CGO_ENABLED=0
+
+                if [[ "${INCLUDE_DEPENDENCIES}" == "true" ]]; then
+                  create-package \
+                    --source ${SOURCE_PATH:-.} \
+                    --cache-location "${HOME}"/carton-cache \
+                    --destination "${HOME}"/buildpack \
+                    --include-dependencies \
+                    --version "${VERSION}"
+                else
+                  create-package \
+                    --source ${SOURCE_PATH:-.} \
+                    --destination "${HOME}"/buildpack \
+                    --version "${VERSION}"
+                fi
+
+                PACKAGE_FILE=${SOURCE_PATH:-.}/package.toml
+                [[ -e ${PACKAGE_FILE} ]] && cp ${PACKAGE_FILE} "${HOME}"/package.toml
+                printf '[buildpack]\nuri = "%s"\n\n[platform]\nos = "%s"\n' "${HOME}"/buildpack "${OS}" >> "${HOME}"/package.toml
+              env:
+                INCLUDE_DEPENDENCIES: "false"
+                OS: linux
+                SOURCE_PATH: ""
+                VERSION: 7.7.7
+            - name: Package Buildpack
+              id: package
+              run: |-
+                #!/usr/bin/env bash
+
+                set -euo pipefail
+
+
+                PACKAGE_LIST=($PACKAGES)
+                # Extract first repo (Docker Hub) as the main to package & register
+                PACKAGE=${PACKAGE_LIST[0]}
+
+                if [[ "${PUBLISH:-x}" == "true" ]]; then
+                  pack buildpack package \
+                    "${PACKAGE}:${VERSION}" \
+                    --config "${HOME}"/package.toml \
+                    --publish
+
+                  if [[ -n ${VERSION_MINOR:-} && -n ${VERSION_MAJOR:-} ]]; then
+                    crane tag "${PACKAGE}:${VERSION}" "${VERSION_MINOR}"
+                    crane tag "${PACKAGE}:${VERSION}" "${VERSION_MAJOR}"
+                  fi
+                  crane tag "${PACKAGE}:${VERSION}" latest
+                  echo "digest=$(crane digest "${PACKAGE}:${VERSION}")" >> "$GITHUB_OUTPUT"
+
+                  # copy to other repositories specified
+                  for P in "${PACKAGE_LIST[@]}"
+                    do
+                      if [ "$P" != "$PACKAGE" ]; then
+                        crane copy "${PACKAGE}:${VERSION}" "${P}:${VERSION}"
+                        if [[ -n ${VERSION_MINOR:-} && -n ${VERSION_MAJOR:-} ]]; then
+                           crane tag "${P}:${VERSION}" "${VERSION_MINOR}"
+                           crane tag "${P}:${VERSION}" "${VERSION_MAJOR}"
+                        fi
+                        crane tag "${P}:${VERSION}" latest
+                      fi
+                    done
+
+                else
+                  pack buildpack package \
+                    "${PACKAGE}:${VERSION}" \
+                    --config "${HOME}"/package.toml
+                fi
+              env:
+                PACKAGES: docker.io/paketobuildpacks/syft gcr.io/paketo-buildpacks/syft
+                PUBLISH: "false"
+                VERSION: 7.7.7
+                VERSION_MAJOR: ${{ steps.version.outputs.version-major }}
+                VERSION_MINOR: ${{ steps.version.outputs.version-minor }}
