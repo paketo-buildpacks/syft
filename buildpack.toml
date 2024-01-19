@@ -31,6 +31,12 @@ api = "0.7"
   include-files = ["LICENSE", "NOTICE", "README.md", "bin/build", "bin/detect", "bin/main", "buildpack.toml"]
   pre-package = "scripts/build.sh"
 
+  [[metadata.configurations]]
+    build = true
+    default = "false"
+    description = "disables generation of SBOM documents during the build process"
+    name = "BP_DISABLE_SBOM"
+
   [[metadata.dependencies]]
     cpes = ["cpe:2.3:a:anchore:syft:0.101.0:*:*:*:*:*:*:*"]
     id = "syft"

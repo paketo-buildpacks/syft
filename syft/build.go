@@ -32,6 +32,19 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 	b.Logger.Title(context.Buildpack)
 	result := libcnb.NewBuildResult()
 
+	cr, err := libpak.NewConfigurationResolver(context.Buildpack, &b.Logger)
+	if err != nil {
+		return libcnb.BuildResult{}, fmt.Errorf("unable to create configuration resolver\n%w", err)
+	}
+
+	if cr.ResolveBool("BP_DISABLE_SBOM") {
+		result.Labels = append(result.Labels, libcnb.Label{
+			Key:   "io.paketo.sbom.disabled",
+			Value: "true",
+		})
+		return result, nil
+	}
+
 	dc, err := libpak.NewDependencyCache(context)
 	if err != nil {
 		return libcnb.BuildResult{}, fmt.Errorf("unable to create dependency cache\n%w", err)
