@@ -40,3 +40,4 @@ dependencies:
     repository: syft
     tag_filter: v(0.*)
     token:      ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
+    arch:       arm64
