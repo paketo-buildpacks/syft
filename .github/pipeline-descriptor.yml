@@ -29,3 +29,14 @@ dependencies:
     repository: syft
     tag_filter: v(0.*)
     token:      ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
+
+# ARM64
+- name:            Syft CLI ARM64
+  id:              syft
+  uses:            docker://ghcr.io/paketo-buildpacks/actions/github-release-dependency:main
+  with:
+    glob:       syft_.+_linux_arm64.tar.gz
+    owner:      anchore
+    repository: syft
+    tag_filter: v(0.*)
+    token:      ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
