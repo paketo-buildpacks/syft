@@ -353,7 +353,7 @@ jobs:
         if: ${{ env.PUBLISH == 'true' }}
         run: |
           #!/usr/bin/env bash
-
+          set -x
           set -euo pipefail
 
           PACKAGE_LIST=($PACKAGES)
