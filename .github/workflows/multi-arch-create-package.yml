@@ -362,6 +362,8 @@ jobs:
           
           docker pull ${PACKAGE}:${VERSION}-amd64  && docker pull ${PACKAGE}:${VERSION}-arm64
           docker manifest create ${PACKAGE}:${VERSION} --amend ${PACKAGE}:${VERSION}-amd64 --amend ${PACKAGE}:${VERSION}-arm64
+          docker manifest annotate gcr.io/paketo-buildpacks/syft:0.0.1-anthony gcr.io/paketo-buildpacks/syft:0.0.1-anthony-amd64 --arch amd64
+          docker manifest annotate gcr.io/paketo-buildpacks/syft:0.0.1-anthony gcr.io/paketo-buildpacks/syft:0.0.1-anthony-arm64 --arch arm64
           docker manifest push ${PACKAGE}:${VERSION}
           docker pull ${PACKAGE}:${VERSION}
           
