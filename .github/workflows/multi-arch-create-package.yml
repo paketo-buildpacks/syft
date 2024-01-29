@@ -371,7 +371,7 @@ jobs:
             crane tag "${PACKAGE}:${VERSION}" "${VERSION_MINOR}"
             crane tag "${PACKAGE}:${VERSION}" "${VERSION_MAJOR}"
           fi
-          crane tag "${PACKAGE}:${VERSION}" latest
+          # crane tag "${PACKAGE}:${VERSION}" latest
           echo "digest=$(crane digest "${PACKAGE}:${VERSION}")" >> "$GITHUB_OUTPUT"
           
           # copy to other repositories specified
@@ -383,7 +383,7 @@ jobs:
                    crane tag "${P}:${VERSION}" "${VERSION_MINOR}"
                    crane tag "${P}:${VERSION}" "${VERSION_MAJOR}"
                 fi
-                crane tag "${P}:${VERSION}" latest
+              # crane tag "${P}:${VERSION}" latest
               fi
             done
 
