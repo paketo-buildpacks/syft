@@ -1,8 +1,8 @@
 name: Create Package
 "on":
-  push:
-    branches:
-      - anthonydahanne-arm64-tests
+  release:
+    types:
+      - published
 jobs:
     create-package:
         name: Create Package
@@ -143,17 +143,9 @@ jobs:
               id: package
               run: |-
                 #!/usr/bin/env bash
-                env
+                
                 set -euo pipefail
-                set -x
-                
-                pack --version
-                which pack
-                     
-                ls -al ~/buildpack/
-                cat ~/package.toml
-                
-                # with this, we don't need to use the package.toml, because pack exp. does not support it with multi arch yet
+                #TODO with this, we don't need to use the package.toml, because pack exp. does not support it with multi arch yet
                 cd ~/buildpack
 
                 PACKAGE_LIST=($PACKAGES)
@@ -161,7 +153,6 @@ jobs:
                 PACKAGE=${PACKAGE_LIST[0]}
 
                 if [[ "${PUBLISH:-x}" == "true" ]]; then
-                  ls
                   pack -v buildpack package \
                     "${PACKAGE}:${VERSION}" \
                     --publish
@@ -170,7 +161,7 @@ jobs:
                     crane tag "${PACKAGE}:${VERSION}" "${VERSION_MINOR}"
                     crane tag "${PACKAGE}:${VERSION}" "${VERSION_MAJOR}"
                   fi
-                  #crane tag "${PACKAGE}:${VERSION}" latest
+                  crane tag "${PACKAGE}:${VERSION}" latest
                   echo "digest=$(crane digest "${PACKAGE}:${VERSION}")" >> "$GITHUB_OUTPUT"
 
                   # copy to other repositories specified
@@ -182,7 +173,7 @@ jobs:
                            crane tag "${P}:${VERSION}" "${VERSION_MINOR}"
                            crane tag "${P}:${VERSION}" "${VERSION_MAJOR}"
                         fi
-                        #crane tag "${P}:${VERSION}" latest
+                        crane tag "${P}:${VERSION}" latest
                       fi
                     done
 
@@ -194,35 +185,35 @@ jobs:
               env:
                 PACKAGES: docker.io/paketobuildpacks/syft gcr.io/paketo-buildpacks/syft
                 PUBLISH: "true"
-                VERSION: dualarch2
-                VERSION_MAJOR: dual
-                VERSION_MINOR: arch
-#            - name: Update release with digest
-#              run: |
-#                #!/usr/bin/env bash
-#
-#                set -euo pipefail
-#
-#                PAYLOAD=$(cat "${GITHUB_EVENT_PATH}")
-#
-#                RELEASE_ID=$(jq -n -r --argjson PAYLOAD "${PAYLOAD}" '$PAYLOAD.release.id')
-#                RELEASE_TAG_NAME=$(jq -n -r --argjson PAYLOAD "${PAYLOAD}" '$PAYLOAD.release.tag_name')
-#                RELEASE_NAME=$(jq -n -r --argjson PAYLOAD "${PAYLOAD}" '$PAYLOAD.release.name')
-#                RELEASE_BODY=$(jq -n -r --argjson PAYLOAD "${PAYLOAD}" '$PAYLOAD.release.body')
-#
-#                gh api \
-#                  --method PATCH \
-#                  "/repos/:owner/:repo/releases/${RELEASE_ID}" \
-#                  --field "tag_name=${RELEASE_TAG_NAME}" \
-#                  --field "name=${RELEASE_NAME}" \
-#                  --field "body=${RELEASE_BODY//<!-- DIGEST PLACEHOLDER -->/\`${DIGEST}\`}"
-#              env:
-#                DIGEST: ${{ steps.package.outputs.digest }}
-#                GITHUB_TOKEN: ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
-#            - if: ${{ true }}
-#              uses: docker://ghcr.io/buildpacks/actions/registry/request-add-entry:4.0.1
-#              with:
-#                address: docker.io/paketobuildpacks/syft@${{ steps.package.outputs.digest }}
-#                id: paketo-buildpacks/syft
-#                token: ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
-#                version: ${{ steps.version.outputs.version }}
+                VERSION: ${{ steps.version.outputs.version }}
+                VERSION_MAJOR: ${{ steps.version.outputs.version-major }}
+                VERSION_MINOR: ${{ steps.version.outputs.version-minor }}
+            - name: Update release with digest
+              run: |
+                #!/usr/bin/env bash
+
+                set -euo pipefail
+
+                PAYLOAD=$(cat "${GITHUB_EVENT_PATH}")
+
+                RELEASE_ID=$(jq -n -r --argjson PAYLOAD "${PAYLOAD}" '$PAYLOAD.release.id')
+                RELEASE_TAG_NAME=$(jq -n -r --argjson PAYLOAD "${PAYLOAD}" '$PAYLOAD.release.tag_name')
+                RELEASE_NAME=$(jq -n -r --argjson PAYLOAD "${PAYLOAD}" '$PAYLOAD.release.name')
+                RELEASE_BODY=$(jq -n -r --argjson PAYLOAD "${PAYLOAD}" '$PAYLOAD.release.body')
+
+                gh api \
+                  --method PATCH \
+                  "/repos/:owner/:repo/releases/${RELEASE_ID}" \
+                  --field "tag_name=${RELEASE_TAG_NAME}" \
+                  --field "name=${RELEASE_NAME}" \
+                  --field "body=${RELEASE_BODY//<!-- DIGEST PLACEHOLDER -->/\`${DIGEST}\`}"
+              env:
+                DIGEST: ${{ steps.package.outputs.digest }}
+                GITHUB_TOKEN: ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
+            - if: ${{ true }}
+              uses: docker://ghcr.io/buildpacks/actions/registry/request-add-entry:4.0.1
+              with:
+                address: docker.io/paketobuildpacks/syft@${{ steps.package.outputs.digest }}
+                id: paketo-buildpacks/syft
+                token: ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
+                version: ${{ steps.version.outputs.version }}
