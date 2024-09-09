@@ -30,7 +30,7 @@ jobs:
                 glob: syft_.+_linux_amd64.tar.gz
                 owner: anchore
                 repository: syft
-                tag_filter: v(0.*)
+                tag_filter: v(1.*)
                 token: ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
             - name: Update Buildpack Dependency
               id: buildpack
