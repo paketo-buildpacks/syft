@@ -48,16 +48,16 @@ api = "0.7"
       uri = "https://github.com/anchore/syft/blob/main/LICENSE"
 
   [[metadata.dependencies]]
-    cpes = ["cpe:2.3:a:anchore:syft:0.105.1:*:*:*:*:*:*:*"]
+    cpes = ["cpe:2.3:a:anchore:syft:1.11.1:*:*:*:*:*:*:*"]
     id = "syft"
     name = "Syft"
-    purl = "pkg:generic/anchore-syft@0.105.1?arch=arm64"
-    sha256 = "eaf059dc2d816b1e994ab9ba98fcea2dcf0f261767c75757103ef1f51ec44889"
-    source = "https://github.com/anchore/syft/archive/refs/tags/v0.105.1.tar.gz"
-    source-sha256 = "dbef62943fe8f69e30982c7990b0b89cfe4fd409221697ddb8b7f861390241f7"
+    purl = "pkg:generic/anchore-syft@1.11.1?arch=arm64"
+    sha256 = "d4d8e246bc667e75fa29a594b3b4652f18c841bc76e1f9536aa0eb08eded1261"
+    source = "https://github.com/anchore/syft/archive/refs/tags/v1.11.1.tar.gz"
+    source-sha256 = "2a998bc29b5a8a232056e5ea8bbdb2e17289732cbff119db50cac61c5f5d0def"
     stacks = ["*"]
-    uri = "https://github.com/anchore/syft/releases/download/v0.105.1/syft_0.105.1_linux_arm64.tar.gz"
-    version = "0.105.1"
+    uri = "https://github.com/anchore/syft/releases/download/v1.11.1/syft_1.11.1_linux_arm64.tar.gz"
+    version = "1.11.1"
 
     [[metadata.dependencies.licenses]]
       type = "Apache-2.0"
