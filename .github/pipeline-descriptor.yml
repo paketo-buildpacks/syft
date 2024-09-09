@@ -27,7 +27,7 @@ dependencies:
     glob:       syft_.+_linux_amd64.tar.gz
     owner:      anchore
     repository: syft
-    tag_filter: v(0.*)
+    tag_filter: v(1.*)
     token:      ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
 
 # ARM64
@@ -38,6 +38,6 @@ dependencies:
     glob:       syft_.+_linux_arm64.tar.gz
     owner:      anchore
     repository: syft
-    tag_filter: v(0.*)
+    tag_filter: v(1.*)
     token:      ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
     arch:       arm64
