@@ -1,4 +1,7 @@
-# `gcr.io/paketo-buildpacks/syft`
+# Paketo Buildpack for Syft
+
+## Buildpack ID: `paketo-buildpacks/syft`
+## Registry URLs: `docker.io/paketobuildpacks/syft`
 
 The Paketo Buildpack for Syft is a Cloud Native Buildpack that contributes the Syft CLI which can be used to generate SBoM information.
 
