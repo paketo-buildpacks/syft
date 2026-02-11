@@ -32,16 +32,16 @@ api = "0.7"
   pre-package = "scripts/build.sh"
 
   [[metadata.dependencies]]
-    cpes = ["cpe:2.3:a:anchore:syft:1.41.2:*:*:*:*:*:*:*"]
+    cpes = ["cpe:2.3:a:anchore:syft:1.42.0:*:*:*:*:*:*:*"]
     id = "syft"
     name = "Syft"
-    purl = "pkg:generic/anchore-syft@1.41.2?arch=amd64"
-    sha256 = "7e0f45251d2a3998d29dfb6575bc662575dd5864c27bdc11625cc369760a17ad"
-    source = "https://github.com/anchore/syft/archive/refs/tags/v1.41.2.tar.gz"
-    source-sha256 = "29377f383cc262113188bdd373899e7c7f7aa73cb5c5cca81fdf2ee0658c603f"
+    purl = "pkg:generic/anchore-syft@1.42.0?arch=amd64"
+    sha256 = "23bec7de5db0ba05590c676a338a8cd49e635df63e6c404c34d437e2c57f1a77"
+    source = "https://github.com/anchore/syft/archive/refs/tags/v1.42.0.tar.gz"
+    source-sha256 = "ed946fd7a485573e5e7784bb5691d60a9cffffebd330e3e2b487afbf11d30102"
     stacks = ["*"]
-    uri = "https://github.com/anchore/syft/releases/download/v1.41.2/syft_1.41.2_linux_amd64.tar.gz"
-    version = "1.41.2"
+    uri = "https://github.com/anchore/syft/releases/download/v1.42.0/syft_1.42.0_linux_amd64.tar.gz"
+    version = "1.42.0"
 
     [[metadata.dependencies.licenses]]
       type = "Apache-2.0"
