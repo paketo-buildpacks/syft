@@ -1,6 +1,6 @@
 module github.com/paketo-buildpacks/syft
 
-go 1.25
+go 1.26
 
 require (
 	github.com/buildpacks/libcnb v1.30.4
