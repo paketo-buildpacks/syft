@@ -63,7 +63,7 @@ api = "0.7"
       type = "Apache-2.0"
       uri = "https://github.com/anchore/syft/blob/main/LICENSE"
 
-[[metadata.dependencies]]
+  [[metadata.dependencies]]
     cpes = ["cpe:2.3:a:anchore:syft:1.45.1:*:*:*:*:*:*:*"]
     id = "syft"
     name = "Syft"
@@ -78,7 +78,8 @@ api = "0.7"
     [[metadata.dependencies.licenses]]
       type = "Apache-2.0"
       uri = "https://github.com/anchore/syft/blob/main/LICENSE"
-[[metadata.dependencies]]
+
+  [[metadata.dependencies]]
     cpes = ["cpe:2.3:a:anchore:syft:1.45.1:*:*:*:*:*:*:*"]
     id = "syft"
     name = "Syft"
@@ -93,6 +94,7 @@ api = "0.7"
     [[metadata.dependencies.licenses]]
       type = "Apache-2.0"
       uri = "https://github.com/anchore/syft/blob/main/LICENSE"
+
 [[stacks]]
   id = "*"
 
