@@ -28,8 +28,8 @@ api = "0.7"
     uri = "https://github.com/paketo-buildpacks/syft/blob/main/LICENSE"
 
 [metadata]
-  include-files = ["LICENSE", "NOTICE", "README.md", "linux/amd64/bin/build", "linux/amd64/bin/detect", "linux/amd64/bin/main", "linux/arm64/bin/build", "linux/arm64/bin/detect", "linux/arm64/bin/main", "buildpack.toml"]
-  pre-package = "scripts/build.sh"
+  include-files = ["LICENSE", "NOTICE", "README.md", "buildpack.toml", "linux/amd64/bin/build", "linux/amd64/bin/detect", "linux/amd64/bin/run", "linux/arm64/bin/build", "linux/arm64/bin/detect", "linux/arm64/bin/run", "linux/ppc64le/bin/build", "linux/ppc64le/bin/detect", "linux/ppc64le/bin/run", "linux/s390x/bin/build", "linux/s390x/bin/detect", "linux/s390x/bin/run"]
+  pre-package = "scripts/build.sh --target linux/amd64 --target linux/arm64 --target linux/ppc64le --target linux/s390x"
 
   [[metadata.dependencies]]
     cpes = ["cpe:2.3:a:anchore:syft:1.51.1:*:*:*:*:*:*:*"]
@@ -94,6 +94,11 @@ api = "0.7"
     [[metadata.dependencies.licenses]]
       type = "Apache-2.0"
       uri = "https://github.com/anchore/syft/blob/main/LICENSE"
+
+  [[metadata.dependency-constraints]]
+    constraint = "1.*"
+    id = "syft"
+    patches = 2
 
 [[stacks]]
   id = "*"
