@@ -34,8 +34,8 @@ type Syft struct {
 	Logger           bard.Logger
 }
 
-func NewSyft(dependency libpak.BuildpackDependency, cache libpak.DependencyCache) (Syft, libcnb.BOMEntry) {
-	contributor, entry := libpak.NewDependencyLayer(dependency, cache, libcnb.LayerTypes{
+func NewSyft(dependency libpak.BuildpackDependency, cache libpak.DependencyCache) (Syft, libcnb.BOMEntry) { //nolint:staticcheck // hold off on the BOM migration for now
+	contributor, entry := libpak.NewDependencyLayer(dependency, cache, libcnb.LayerTypes{ //nolint:staticcheck // hold off on the BOM migration for now
 		Cache: true,
 		Build: true,
 	})
@@ -47,7 +47,7 @@ func (w Syft) Contribute(layer libcnb.Layer) (libcnb.Layer, error) {
 
 	return w.LayerContributor.Contribute(layer, func(artifact *os.File) (libcnb.Layer, error) {
 		w.Logger.Bodyf("Expanding to %s", layer.Path)
-		if err := crush.ExtractTarGz(artifact, layer.Path, 0); err != nil {
+		if err := crush.Extract(artifact, layer.Path, 0); err != nil {
 			return libcnb.Layer{}, fmt.Errorf("unable to expand Syft\n%w", err)
 		}
 

@@ -15,243 +15,164 @@
 package main
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
-	"flag"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"regexp"
-	"sort"
 	"strings"
 
-	"github.com/BurntSushi/toml"
 	"github.com/Masterminds/semver/v3"
+	"github.com/paketo-buildpacks/libdependency/retrieve"
+	"github.com/paketo-buildpacks/libdependency/upstream"
+	"github.com/paketo-buildpacks/libdependency/versionology"
 	"github.com/paketo-buildpacks/packit/v2/cargo"
 )
 
-var httpClient = &http.Client{}
+const (
+	id       = "syft"
+	name     = "Syft"
+	purlName = "anchore-syft"
 
-func main() {
-	var buildpackTomlPath, outputPath string
-	flag.StringVar(&buildpackTomlPath, "buildpack-toml-path", "", "Path to buildpack.toml")
-	flag.StringVar(&outputPath, "output", "", "Path to output metadata.json")
-	flag.Parse()
+	org  = "anchore"
+	repo = "syft"
+)
 
-	if buildpackTomlPath == "" || outputPath == "" {
-		fmt.Fprintf(os.Stderr, "Usage: %s --buildpack-toml-path <path> --output <path>\n", os.Args[0])
-		os.Exit(1)
-	}
+var (
+	amd64AssetPattern = regexp.MustCompile(`syft_.+_linux_amd64\.tar\.gz`)
+	arm64AssetPattern = regexp.MustCompile(`syft_.+_linux_arm64\.tar\.gz`)
+)
 
-	// Load buildpack.toml
-	file, err := os.Open(buildpackTomlPath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error opening buildpack.toml: %v\n", err)
-		os.Exit(1)
-	}
-	defer file.Close()
-
-	var config cargo.Config
-	if _, err := toml.NewDecoder(file).Decode(&config); err != nil {
-		fmt.Fprintf(os.Stderr, "Error parsing buildpack.toml: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Get constraints for syft
-	var constraints []cargo.ConfigMetadataDependencyConstraint
-	for _, c := range config.Metadata.DependencyConstraints {
-		if c.ID == "syft" {
-			constraints = append(constraints, c)
-		}
-	}
-
-	// Get maximum existing version
-	var maxExistingVersion *semver.Version
-	for _, dep := range config.Metadata.Dependencies {
-		if dep.ID == "syft" {
-			v, err := semver.NewVersion(dep.Version)
-			if err == nil {
-				if maxExistingVersion == nil || v.GreaterThan(maxExistingVersion) {
-					maxExistingVersion = v
-				}
-			}
-		}
-	}
-
-	// Fetch GitHub releases
-	releases, err := fetchReleases("anchore", "syft")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error fetching releases: %v\n", err)
-		os.Exit(1)
-	}
-
-	var output []OutputMetadata
-
-	for _, release := range releases {
-		versionStr := strings.TrimPrefix(release.TagName, "v")
-		v, err := semver.NewVersion(versionStr)
-		if err != nil {
-			fmt.Printf("Skipping %s: unable to parse version\n", versionStr)
-			continue
-		}
-		if maxExistingVersion != nil && !v.GreaterThan(maxExistingVersion) {
-			fmt.Printf("Skipping %s: not newer than max existing version %s\n", versionStr, maxExistingVersion.String())
-			continue
-		}
-		if !matchesConstraints(v, constraints) {
-			continue
-		}
-
-		// Find amd64 and arm64 assets
-		amd64Asset := findAsset(release.Assets, `syft_.+_linux_amd64\.tar\.gz`)
-		arm64Asset := findAsset(release.Assets, `syft_.+_linux_arm64\.tar\.gz`)
-		if amd64Asset == nil || arm64Asset == nil {
-			fmt.Printf("Skipping %s: missing required assets\n", versionStr)
-			continue
-		}
-
-		// Compute checksums
-		fmt.Printf("Processing version %s...\n", versionStr)
-		amd64Checksum, err := computeChecksum(amd64Asset.BrowserDownloadURL)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Warning: failed to checksum amd64 asset for %s: %v\n", versionStr, err)
-			continue
-		}
-		arm64Checksum, err := computeChecksum(arm64Asset.BrowserDownloadURL)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Warning: failed to checksum arm64 asset for %s: %v\n", versionStr, err)
-			continue
-		}
-
-		sourceURL := fmt.Sprintf("https://github.com/anchore/syft/archive/refs/tags/%s.tar.gz", release.TagName)
-		sourceChecksum, err := computeChecksum(sourceURL)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Warning: failed to checksum source for %s: %v\n", versionStr, err)
-			continue
-		}
-
-		cpe := fmt.Sprintf("cpe:2.3:a:anchore:syft:%s:*:*:*:*:*:*:*", versionStr)
-		purlAMD64 := fmt.Sprintf("pkg:generic/anchore-syft@%s?arch=amd64", versionStr)
-		purlARM64 := fmt.Sprintf("pkg:generic/anchore-syft@%s?arch=arm64", versionStr)
-
-		licenses := []map[string]string{
-			{
-				"type": "Apache-2.0",
-				"uri":  "https://github.com/anchore/syft/blob/main/LICENSE",
-			},
-		}
-
-		output = append(output, OutputMetadata{
-			ID:             "syft",
-			Name:           "Syft",
-			Version:        versionStr,
-			URI:            amd64Asset.BrowserDownloadURL,
-			Checksum:       "sha256:" + amd64Checksum,
-			Source:         sourceURL,
-			SourceChecksum: "sha256:" + sourceChecksum,
-			Target:         "linux-amd64",
-			OS:             "linux",
-			Arch:           "amd64",
-			CPE:            cpe,
-			PURL:           purlAMD64,
-			Licenses:       licenses,
-			Stacks:         []string{"*"},
-		})
-
-		output = append(output, OutputMetadata{
-			ID:             "syft",
-			Name:           "Syft",
-			Version:        versionStr,
-			URI:            arm64Asset.BrowserDownloadURL,
-			Checksum:       "sha256:" + arm64Checksum,
-			Source:         sourceURL,
-			SourceChecksum: "sha256:" + sourceChecksum,
-			Target:         "linux-arm64",
-			OS:             "linux",
-			Arch:           "arm64",
-			CPE:            cpe,
-			PURL:           purlARM64,
-			Licenses:       licenses,
-			Stacks:         []string{"*"},
-		})
-	}
-
-	// Write output
-	outFile, err := os.Create(outputPath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating output file: %v\n", err)
-		os.Exit(1)
-	}
-	defer outFile.Close()
-
-	encoder := json.NewEncoder(outFile)
-	encoder.SetIndent("", "  ")
-	if err = encoder.Encode(output); err != nil {
-		fmt.Fprintf(os.Stderr, "Error encoding output: %v\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Printf("Successfully wrote %d dependency entries to %s\n", len(output), outputPath)
-}
-
-type OutputMetadata struct {
-	ID             string              `json:"id"`
-	Name           string              `json:"name"`
-	Version        string              `json:"version"`
-	URI            string              `json:"uri"`
-	Checksum       string              `json:"checksum"`
-	Source         string              `json:"source,omitempty"`
-	SourceChecksum string              `json:"source-checksum,omitempty"`
-	Target         string              `json:"target"`
-	OS             string              `json:"os,omitempty"`
-	Arch           string              `json:"arch,omitempty"`
-	CPE            string              `json:"cpe,omitempty"`
-	PURL           string              `json:"purl,omitempty"`
-	Licenses       []map[string]string `json:"licenses,omitempty"`
-	Stacks         []string            `json:"stacks,omitempty"`
-}
-
-type GitHubAsset struct {
+type asset struct {
 	Name               string `json:"name"`
 	BrowserDownloadURL string `json:"browser_download_url"`
 }
 
-type GitHubRelease struct {
-	TagName    string        `json:"tag_name"`
-	Name       string        `json:"name"`
-	Prerelease bool          `json:"prerelease"`
-	Assets     []GitHubAsset `json:"assets"`
+type release struct {
+	TagName    string  `json:"tag_name"`
+	Prerelease bool    `json:"prerelease"`
+	Assets     []asset `json:"assets"`
 }
 
-func fetchReleases(owner, repo string) ([]GitHubRelease, error) {
-	var allReleases []GitHubRelease
-	page := 1
-	for {
-		url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases?page=%d&per_page=100", owner, repo, page)
-		req, err := http.NewRequest("GET", url, nil)
+type syftVersion struct {
+	version *semver.Version
+	tag     string
+	assets  []asset
+}
+
+func (v syftVersion) Version() *semver.Version {
+	return v.version
+}
+
+func main() {
+	retrieve.NewMetadata(id, getAllVersions, generateMetadata)
+}
+
+func getAllVersions() (versionology.VersionFetcherArray, error) {
+	releases, err := fetchReleases(org, repo)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch releases\n%w", err)
+	}
+
+	var versions versionology.VersionFetcherArray
+	for _, r := range releases {
+		v, err := semver.NewVersion(strings.TrimPrefix(r.TagName, "v"))
+		if err != nil {
+			fmt.Printf("Skipping %s: unable to parse version\n", r.TagName)
+			continue
+		}
+
+		versions = append(versions, syftVersion{version: v, tag: r.TagName, assets: r.Assets})
+	}
+
+	return versions, nil
+}
+
+func generateMetadata(versionFetcher versionology.VersionFetcher) ([]versionology.Dependency, error) {
+	version, ok := versionFetcher.(syftVersion)
+	if !ok {
+		return nil, fmt.Errorf("unexpected version type %T", versionFetcher)
+	}
+
+	versionString := version.version.String()
+
+	amd64 := findAsset(version.assets, amd64AssetPattern)
+	arm64 := findAsset(version.assets, arm64AssetPattern)
+	if amd64 == nil || arm64 == nil {
+		fmt.Printf("Skipping %s: missing required assets\n", versionString)
+		return nil, nil
+	}
+
+	source := fmt.Sprintf("https://github.com/%s/%s/archive/refs/tags/%s.tar.gz", org, repo, version.tag)
+	sourceChecksum, err := upstream.GetSHA256OfRemoteFile(source)
+	if err != nil {
+		return nil, fmt.Errorf("unable to checksum %s\n%w", source, err)
+	}
+
+	licenses := []interface{}{
+		map[string]string{
+			"type": "Apache-2.0",
+			"uri":  "https://github.com/anchore/syft/blob/main/LICENSE",
+		},
+	}
+
+	platforms := []struct {
+		asset  *asset
+		arch   string
+		target string
+	}{
+		{asset: amd64, arch: "amd64", target: "linux-amd64"},
+		{asset: arm64, arch: "arm64", target: "linux-arm64"},
+	}
+
+	var dependencies []versionology.Dependency
+	for _, platform := range platforms {
+		checksum, err := upstream.GetSHA256OfRemoteFile(platform.asset.BrowserDownloadURL)
+		if err != nil {
+			return nil, fmt.Errorf("unable to checksum %s\n%w", platform.asset.BrowserDownloadURL, err)
+		}
+
+		dependency := cargo.ConfigMetadataDependency{
+			Arch:           platform.arch,
+			Checksum:       fmt.Sprintf("sha256:%s", checksum),
+			CPE:            fmt.Sprintf("cpe:2.3:a:anchore:syft:%s:*:*:*:*:*:*:*", versionString),
+			ID:             id,
+			Licenses:       licenses,
+			Name:           name,
+			OS:             "linux",
+			PURL:           retrieve.GeneratePURL(purlName, versionString, checksum, platform.asset.BrowserDownloadURL),
+			Source:         source,
+			SourceChecksum: fmt.Sprintf("sha256:%s", sourceChecksum),
+			Stacks:         []string{"*"},
+			URI:            platform.asset.BrowserDownloadURL,
+			Version:        versionString,
+		}
+
+		d, err := versionology.NewDependency(dependency, platform.target)
 		if err != nil {
 			return nil, err
 		}
+		dependencies = append(dependencies, d)
+	}
 
-		if token := os.Getenv("GITHUB_TOKEN"); token != "" {
-			req.Header.Set("Authorization", "Bearer "+token)
+	return dependencies, nil
+}
+
+func findAsset(assets []asset, pattern *regexp.Regexp) *asset {
+	for i := range assets {
+		if pattern.MatchString(assets[i].Name) {
+			return &assets[i]
 		}
+	}
 
-		resp, err := httpClient.Do(req)
+	return nil
+}
+
+func fetchReleases(owner, repo string) ([]release, error) {
+	var all []release
+	for page := 1; ; page++ {
+		releases, err := fetchPage(owner, repo, page)
 		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
-			return nil, fmt.Errorf("GitHub API returned %d: %s", resp.StatusCode, string(body))
-		}
-
-		var releases []GitHubRelease
-		if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
 			return nil, err
 		}
 
@@ -263,65 +184,40 @@ func fetchReleases(owner, repo string) ([]GitHubRelease, error) {
 			if r.Prerelease {
 				continue
 			}
-			allReleases = append(allReleases, r)
-		}
-
-		page++
-	}
-
-	// Sort by version descending
-	sort.Slice(allReleases, func(i, j int) bool {
-		vi, _ := semver.NewVersion(strings.TrimPrefix(allReleases[i].TagName, "v"))
-		vj, _ := semver.NewVersion(strings.TrimPrefix(allReleases[j].TagName, "v"))
-		if vi == nil || vj == nil {
-			return allReleases[i].TagName > allReleases[j].TagName
-		}
-		return vi.GreaterThan(vj)
-	})
-
-	return allReleases, nil
-}
-
-func findAsset(assets []GitHubAsset, pattern string) *GitHubAsset {
-	re := regexp.MustCompile(pattern)
-	for _, a := range assets {
-		if re.MatchString(a.Name) {
-			return &a
+			all = append(all, r)
 		}
 	}
-	return nil
+
+	return all, nil
 }
 
-func computeChecksum(uri string) (string, error) {
-	resp, err := httpClient.Get(uri)
+func fetchPage(owner, repo string, page int) ([]release, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases?page=%d&per_page=100", owner, repo, page)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", fmt.Errorf("unable to download %s: %w", uri, err)
+		return nil, err
 	}
-	defer resp.Body.Close()
+
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unable to download %s: status %d", uri, resp.StatusCode)
+		return nil, fmt.Errorf("github API returned status %d for %s", resp.StatusCode, url)
 	}
 
-	h := sha256.New()
-	if _, err := io.Copy(h, resp.Body); err != nil {
-		return "", fmt.Errorf("unable to read %s: %w", uri, err)
+	var releases []release
+	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
+		return nil, err
 	}
-	return hex.EncodeToString(h.Sum(nil)), nil
-}
 
-func matchesConstraints(v *semver.Version, constraints []cargo.ConfigMetadataDependencyConstraint) bool {
-	if len(constraints) == 0 {
-		return true
-	}
-	for _, c := range constraints {
-		cstr, err := semver.NewConstraint(c.Constraint)
-		if err != nil {
-			continue
-		}
-		if cstr.Check(v) {
-			return true
-		}
-	}
-	return false
+	return releases, nil
 }
