@@ -38,11 +38,6 @@ const (
 	repo = "syft"
 )
 
-var (
-	amd64AssetPattern = regexp.MustCompile(`syft_.+_linux_amd64\.tar\.gz`)
-	arm64AssetPattern = regexp.MustCompile(`syft_.+_linux_arm64\.tar\.gz`)
-)
-
 type asset struct {
 	Name               string `json:"name"`
 	BrowserDownloadURL string `json:"browser_download_url"`
@@ -65,7 +60,7 @@ func (v syftVersion) Version() *semver.Version {
 }
 
 func main() {
-	retrieve.NewMetadata(id, getAllVersions, generateMetadata)
+	retrieve.NewMetadataWithPlatforms(id, getAllVersions, generateMetadata)
 }
 
 func getAllVersions() (versionology.VersionFetcherArray, error) {
@@ -88,7 +83,7 @@ func getAllVersions() (versionology.VersionFetcherArray, error) {
 	return versions, nil
 }
 
-func generateMetadata(versionFetcher versionology.VersionFetcher) ([]versionology.Dependency, error) {
+func generateMetadata(versionFetcher versionology.VersionFetcher, platform retrieve.Platform) ([]versionology.Dependency, error) {
 	version, ok := versionFetcher.(syftVersion)
 	if !ok {
 		return nil, fmt.Errorf("unexpected version type %T", versionFetcher)
@@ -96,10 +91,9 @@ func generateMetadata(versionFetcher versionology.VersionFetcher) ([]versionolog
 
 	versionString := version.version.String()
 
-	amd64 := findAsset(version.assets, amd64AssetPattern)
-	arm64 := findAsset(version.assets, arm64AssetPattern)
-	if amd64 == nil || arm64 == nil {
-		fmt.Printf("Skipping %s: missing required assets\n", versionString)
+	archive := findAsset(version.assets, assetPattern(platform.Arch))
+	if archive == nil {
+		fmt.Printf("Skipping %s: missing %s/%s asset\n", versionString, platform.OS, platform.Arch)
 		return nil, nil
 	}
 
@@ -109,53 +103,42 @@ func generateMetadata(versionFetcher versionology.VersionFetcher) ([]versionolog
 		return nil, fmt.Errorf("unable to checksum %s\n%w", source, err)
 	}
 
-	licenses := []interface{}{
-		map[string]string{
-			"type": "Apache-2.0",
-			"uri":  "https://github.com/anchore/syft/blob/main/LICENSE",
+	checksum, err := upstream.GetSHA256OfRemoteFile(archive.BrowserDownloadURL)
+	if err != nil {
+		return nil, fmt.Errorf("unable to checksum %s\n%w", archive.BrowserDownloadURL, err)
+	}
+
+	dependency := cargo.ConfigMetadataDependency{
+		Arch:     platform.Arch,
+		Checksum: fmt.Sprintf("sha256:%s", checksum),
+		CPE:      fmt.Sprintf("cpe:2.3:a:anchore:syft:%s:*:*:*:*:*:*:*", versionString),
+		ID:       id,
+		Licenses: []interface{}{
+			map[string]string{
+				"type": "Apache-2.0",
+				"uri":  "https://github.com/anchore/syft/blob/main/LICENSE",
+			},
 		},
+		Name:           name,
+		OS:             platform.OS,
+		PURL:           retrieve.GeneratePURL(purlName, versionString, checksum, archive.BrowserDownloadURL),
+		Source:         source,
+		SourceChecksum: fmt.Sprintf("sha256:%s", sourceChecksum),
+		Stacks:         []string{"*"},
+		URI:            archive.BrowserDownloadURL,
+		Version:        versionString,
 	}
 
-	platforms := []struct {
-		asset  *asset
-		arch   string
-		target string
-	}{
-		{asset: amd64, arch: "amd64", target: "linux-amd64"},
-		{asset: arm64, arch: "arm64", target: "linux-arm64"},
+	d, err := versionology.NewDependency(dependency, fmt.Sprintf("%s-%s", platform.OS, platform.Arch))
+	if err != nil {
+		return nil, err
 	}
 
-	var dependencies []versionology.Dependency
-	for _, platform := range platforms {
-		checksum, err := upstream.GetSHA256OfRemoteFile(platform.asset.BrowserDownloadURL)
-		if err != nil {
-			return nil, fmt.Errorf("unable to checksum %s\n%w", platform.asset.BrowserDownloadURL, err)
-		}
+	return []versionology.Dependency{d}, nil
+}
 
-		dependency := cargo.ConfigMetadataDependency{
-			Arch:           platform.arch,
-			Checksum:       fmt.Sprintf("sha256:%s", checksum),
-			CPE:            fmt.Sprintf("cpe:2.3:a:anchore:syft:%s:*:*:*:*:*:*:*", versionString),
-			ID:             id,
-			Licenses:       licenses,
-			Name:           name,
-			OS:             "linux",
-			PURL:           retrieve.GeneratePURL(purlName, versionString, checksum, platform.asset.BrowserDownloadURL),
-			Source:         source,
-			SourceChecksum: fmt.Sprintf("sha256:%s", sourceChecksum),
-			Stacks:         []string{"*"},
-			URI:            platform.asset.BrowserDownloadURL,
-			Version:        versionString,
-		}
-
-		d, err := versionology.NewDependency(dependency, platform.target)
-		if err != nil {
-			return nil, err
-		}
-		dependencies = append(dependencies, d)
-	}
-
-	return dependencies, nil
+func assetPattern(arch string) *regexp.Regexp {
+	return regexp.MustCompile(fmt.Sprintf(`syft_.+_linux_%s\.tar\.gz`, regexp.QuoteMeta(arch)))
 }
 
 func findAsset(assets []asset, pattern *regexp.Regexp) *asset {
