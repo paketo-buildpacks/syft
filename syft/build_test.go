@@ -17,7 +17,6 @@
 package syft_test
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -38,7 +37,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 	it.Before(func() {
 		var err error
 
-		ctx.Application.Path, err = ioutil.TempDir("", "build")
+		ctx.Application.Path, err = os.MkdirTemp("", "build")
 		Expect(err).NotTo(HaveOccurred())
 
 		ctx.Plan.Entries = append(ctx.Plan.Entries, libcnb.BuildpackPlanEntry{Name: "syft"})
@@ -67,8 +66,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(result.Layers).To(HaveLen(1))
 		Expect(result.Layers[0].Name()).To(Equal("syft"))
 
-		Expect(result.BOM.Entries).To(HaveLen(1))
-		Expect(result.BOM.Entries[0].Name).To(Equal("syft"))
+		Expect(result.BOM.Entries).To(HaveLen(1))            //nolint:staticcheck // hold off on the BOM migration for now
+		Expect(result.BOM.Entries[0].Name).To(Equal("syft")) //nolint:staticcheck // hold off on the BOM migration for now
 	})
 
 	it("contributes Syft API >= 0.7", func() {
@@ -91,7 +90,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(result.Layers).To(HaveLen(1))
 		Expect(result.Layers[0].Name()).To(Equal("syft"))
 
-		Expect(result.BOM.Entries).To(HaveLen(1))
-		Expect(result.BOM.Entries[0].Name).To(Equal("syft"))
+		Expect(result.BOM.Entries).To(HaveLen(1))            //nolint:staticcheck // hold off on the BOM migration for now
+		Expect(result.BOM.Entries[0].Name).To(Equal("syft")) //nolint:staticcheck // hold off on the BOM migration for now
 	})
 }

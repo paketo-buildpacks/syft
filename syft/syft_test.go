@@ -18,7 +18,6 @@ package syft_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -41,7 +40,7 @@ func testSyft(t *testing.T, context spec.G, it spec.S) {
 	it.Before(func() {
 		var err error
 
-		ctx.Layers.Path, err = ioutil.TempDir("", "syft-layers")
+		ctx.Layers.Path, err = os.MkdirTemp("", "syft-layers")
 		Expect(err).NotTo(HaveOccurred())
 	})
 
