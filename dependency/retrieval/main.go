@@ -121,7 +121,7 @@ func generateMetadata(versionFetcher versionology.VersionFetcher, platform retri
 		},
 		Name:           name,
 		OS:             platform.OS,
-		PURL:           retrieve.GeneratePURL(purlName, versionString, checksum, archive.BrowserDownloadURL),
+		PURL:           purlWithArch(retrieve.GeneratePURL(purlName, versionString, checksum, archive.BrowserDownloadURL), platform.Arch),
 		Source:         source,
 		SourceChecksum: fmt.Sprintf("sha256:%s", sourceChecksum),
 		Stacks:         []string{"*"},
@@ -135,6 +135,15 @@ func generateMetadata(versionFetcher versionology.VersionFetcher, platform retri
 	}
 
 	return []versionology.Dependency{d}, nil
+}
+
+// purlWithArch adds the arch qualifier to a PURL.
+// libdependency's GeneratePURL does not set it.
+func purlWithArch(purl string, arch string) string {
+	if base, qualifiers, found := strings.Cut(purl, "?"); found {
+		return fmt.Sprintf("%s?arch=%s&%s", base, arch, qualifiers)
+	}
+	return fmt.Sprintf("%s?arch=%s", purl, arch)
 }
 
 func assetPattern(arch string) *regexp.Regexp {
