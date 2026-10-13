@@ -42,9 +42,14 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		ctx.Plan.Entries = append(ctx.Plan.Entries, libcnb.BuildpackPlanEntry{Name: "syft"})
 		ctx.StackID = "test-stack-id"
+
+		// the dependencies below are amd64, so pin the arch libpak resolves against rather
+		// than letting it come from whichever machine runs the test
+		Expect(os.Setenv("BP_ARCH", "amd64")).To(Succeed())
 	})
 
 	it.After(func() {
+		Expect(os.Unsetenv("BP_ARCH")).To(Succeed())
 		Expect(os.RemoveAll(ctx.Application.Path)).To(Succeed())
 	})
 
