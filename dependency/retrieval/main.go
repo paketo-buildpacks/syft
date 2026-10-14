@@ -122,6 +122,7 @@ func generateMetadata(versionFetcher versionology.VersionFetcher, platform retri
 		Name:           name,
 		OS:             platform.OS,
 		PURL:           purlWithArch(retrieve.GeneratePURL(purlName, versionString, checksum, archive.BrowserDownloadURL), platform.Arch),
+		SHA256:         checksum,
 		Source:         source,
 		SourceChecksum: fmt.Sprintf("sha256:%s", sourceChecksum),
 		Stacks:         []string{"*"},
