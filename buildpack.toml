@@ -19,82 +19,6 @@ api = "0.7"
 
   [[metadata.dependencies]]
     arch = "amd64"
-    checksum = "sha256:bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
-    cpe = "cpe:2.3:a:anchore:syft:1.55.0:*:*:*:*:*:*:*"
-    id = "syft"
-    name = "Syft"
-    os = "linux"
-    purl = "pkg:generic/anchore-syft@1.55.0?arch=amd64&checksum=bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d&download_url=https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz"
-    sha256 = "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
-    source = "https://github.com/anchore/syft/archive/refs/tags/v1.55.0.tar.gz"
-    source-checksum = "sha256:d402b3988cdaea74bc01763830a6e45b4a3f1ada40f8fcad7edb5b230c18f1eb"
-    stacks = ["*"]
-    uri = "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz"
-    version = "1.55.0"
-
-    [[metadata.dependencies.licenses]]
-      type = "Apache-2.0"
-      uri = "https://github.com/anchore/syft/blob/main/LICENSE"
-
-  [[metadata.dependencies]]
-    arch = "arm64"
-    checksum = "sha256:929bd163db2d7cd2255d3bcb8967208079813d7b46b0c952f7b794d8e2c7d304"
-    cpe = "cpe:2.3:a:anchore:syft:1.55.0:*:*:*:*:*:*:*"
-    id = "syft"
-    name = "Syft"
-    os = "linux"
-    purl = "pkg:generic/anchore-syft@1.55.0?arch=arm64&checksum=929bd163db2d7cd2255d3bcb8967208079813d7b46b0c952f7b794d8e2c7d304&download_url=https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_arm64.tar.gz"
-    sha256 = "929bd163db2d7cd2255d3bcb8967208079813d7b46b0c952f7b794d8e2c7d304"
-    source = "https://github.com/anchore/syft/archive/refs/tags/v1.55.0.tar.gz"
-    source-checksum = "sha256:d402b3988cdaea74bc01763830a6e45b4a3f1ada40f8fcad7edb5b230c18f1eb"
-    stacks = ["*"]
-    uri = "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_arm64.tar.gz"
-    version = "1.55.0"
-
-    [[metadata.dependencies.licenses]]
-      type = "Apache-2.0"
-      uri = "https://github.com/anchore/syft/blob/main/LICENSE"
-
-  [[metadata.dependencies]]
-    arch = "s390x"
-    checksum = "sha256:614aec958214cf9fc663b401ac648443c078c844603e16bde2733bee1f002b80"
-    cpe = "cpe:2.3:a:anchore:syft:1.55.0:*:*:*:*:*:*:*"
-    id = "syft"
-    name = "Syft"
-    os = "linux"
-    purl = "pkg:generic/anchore-syft@1.55.0?arch=s390x&checksum=614aec958214cf9fc663b401ac648443c078c844603e16bde2733bee1f002b80&download_url=https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_s390x.tar.gz"
-    sha256 = "614aec958214cf9fc663b401ac648443c078c844603e16bde2733bee1f002b80"
-    source = "https://github.com/anchore/syft/archive/refs/tags/v1.55.0.tar.gz"
-    source-checksum = "sha256:d402b3988cdaea74bc01763830a6e45b4a3f1ada40f8fcad7edb5b230c18f1eb"
-    stacks = ["*"]
-    uri = "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_s390x.tar.gz"
-    version = "1.55.0"
-
-    [[metadata.dependencies.licenses]]
-      type = "Apache-2.0"
-      uri = "https://github.com/anchore/syft/blob/main/LICENSE"
-
-  [[metadata.dependencies]]
-    arch = "ppc64le"
-    checksum = "sha256:771e7c3b3e91cf9ded39079366ebe5693a16b4f2723cc72c8c6487e457726ea4"
-    cpe = "cpe:2.3:a:anchore:syft:1.55.0:*:*:*:*:*:*:*"
-    id = "syft"
-    name = "Syft"
-    os = "linux"
-    purl = "pkg:generic/anchore-syft@1.55.0?arch=ppc64le&checksum=771e7c3b3e91cf9ded39079366ebe5693a16b4f2723cc72c8c6487e457726ea4&download_url=https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_ppc64le.tar.gz"
-    sha256 = "771e7c3b3e91cf9ded39079366ebe5693a16b4f2723cc72c8c6487e457726ea4"
-    source = "https://github.com/anchore/syft/archive/refs/tags/v1.55.0.tar.gz"
-    source-checksum = "sha256:d402b3988cdaea74bc01763830a6e45b4a3f1ada40f8fcad7edb5b230c18f1eb"
-    stacks = ["*"]
-    uri = "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_ppc64le.tar.gz"
-    version = "1.55.0"
-
-    [[metadata.dependencies.licenses]]
-      type = "Apache-2.0"
-      uri = "https://github.com/anchore/syft/blob/main/LICENSE"
-
-  [[metadata.dependencies]]
-    arch = "amd64"
     checksum = "sha256:1c2493cfcf52d3367d6cb25780d9190c111c2219c34c820574c43e8bae15c528"
     cpe = "cpe:2.3:a:anchore:syft:1.56.0:*:*:*:*:*:*:*"
     id = "syft"
@@ -164,6 +88,82 @@ api = "0.7"
     stacks = ["*"]
     uri = "https://github.com/anchore/syft/releases/download/v1.56.0/syft_1.56.0_linux_ppc64le.tar.gz"
     version = "1.56.0"
+
+    [[metadata.dependencies.licenses]]
+      type = "Apache-2.0"
+      uri = "https://github.com/anchore/syft/blob/main/LICENSE"
+
+  [[metadata.dependencies]]
+    arch = "amd64"
+    checksum = "sha256:9c077a7d43029b3b13e98a8db720661e700c4d58db6352153a06395ae4a2a704"
+    cpe = "cpe:2.3:a:anchore:syft:1.57.0:*:*:*:*:*:*:*"
+    id = "syft"
+    name = "Syft"
+    os = "linux"
+    purl = "pkg:generic/anchore-syft@1.57.0?arch=amd64&checksum=9c077a7d43029b3b13e98a8db720661e700c4d58db6352153a06395ae4a2a704&download_url=https://github.com/anchore/syft/releases/download/v1.57.0/syft_1.57.0_linux_amd64.tar.gz"
+    sha256 = "9c077a7d43029b3b13e98a8db720661e700c4d58db6352153a06395ae4a2a704"
+    source = "https://github.com/anchore/syft/archive/refs/tags/v1.57.0.tar.gz"
+    source-checksum = "sha256:04f03d36dd080677127ca4b00eb3189d4447d5f9a26e7746f3011c66edf7a8a5"
+    stacks = ["*"]
+    uri = "https://github.com/anchore/syft/releases/download/v1.57.0/syft_1.57.0_linux_amd64.tar.gz"
+    version = "1.57.0"
+
+    [[metadata.dependencies.licenses]]
+      type = "Apache-2.0"
+      uri = "https://github.com/anchore/syft/blob/main/LICENSE"
+
+  [[metadata.dependencies]]
+    arch = "arm64"
+    checksum = "sha256:410cbfa0ae0f63246bc0057843760b1de2833cd23919e025e368fd7681308cdb"
+    cpe = "cpe:2.3:a:anchore:syft:1.57.0:*:*:*:*:*:*:*"
+    id = "syft"
+    name = "Syft"
+    os = "linux"
+    purl = "pkg:generic/anchore-syft@1.57.0?arch=arm64&checksum=410cbfa0ae0f63246bc0057843760b1de2833cd23919e025e368fd7681308cdb&download_url=https://github.com/anchore/syft/releases/download/v1.57.0/syft_1.57.0_linux_arm64.tar.gz"
+    sha256 = "410cbfa0ae0f63246bc0057843760b1de2833cd23919e025e368fd7681308cdb"
+    source = "https://github.com/anchore/syft/archive/refs/tags/v1.57.0.tar.gz"
+    source-checksum = "sha256:04f03d36dd080677127ca4b00eb3189d4447d5f9a26e7746f3011c66edf7a8a5"
+    stacks = ["*"]
+    uri = "https://github.com/anchore/syft/releases/download/v1.57.0/syft_1.57.0_linux_arm64.tar.gz"
+    version = "1.57.0"
+
+    [[metadata.dependencies.licenses]]
+      type = "Apache-2.0"
+      uri = "https://github.com/anchore/syft/blob/main/LICENSE"
+
+  [[metadata.dependencies]]
+    arch = "s390x"
+    checksum = "sha256:8a2063cd150af79bfa3edc09eab5fda1055b7877d7c4b16e01bb3e25f7077a8a"
+    cpe = "cpe:2.3:a:anchore:syft:1.57.0:*:*:*:*:*:*:*"
+    id = "syft"
+    name = "Syft"
+    os = "linux"
+    purl = "pkg:generic/anchore-syft@1.57.0?arch=s390x&checksum=8a2063cd150af79bfa3edc09eab5fda1055b7877d7c4b16e01bb3e25f7077a8a&download_url=https://github.com/anchore/syft/releases/download/v1.57.0/syft_1.57.0_linux_s390x.tar.gz"
+    sha256 = "8a2063cd150af79bfa3edc09eab5fda1055b7877d7c4b16e01bb3e25f7077a8a"
+    source = "https://github.com/anchore/syft/archive/refs/tags/v1.57.0.tar.gz"
+    source-checksum = "sha256:04f03d36dd080677127ca4b00eb3189d4447d5f9a26e7746f3011c66edf7a8a5"
+    stacks = ["*"]
+    uri = "https://github.com/anchore/syft/releases/download/v1.57.0/syft_1.57.0_linux_s390x.tar.gz"
+    version = "1.57.0"
+
+    [[metadata.dependencies.licenses]]
+      type = "Apache-2.0"
+      uri = "https://github.com/anchore/syft/blob/main/LICENSE"
+
+  [[metadata.dependencies]]
+    arch = "ppc64le"
+    checksum = "sha256:4d150f2bcb7eebad01fb1b5efe27fd12b6a2fa3464df8080bd960aea2d9a2ba9"
+    cpe = "cpe:2.3:a:anchore:syft:1.57.0:*:*:*:*:*:*:*"
+    id = "syft"
+    name = "Syft"
+    os = "linux"
+    purl = "pkg:generic/anchore-syft@1.57.0?arch=ppc64le&checksum=4d150f2bcb7eebad01fb1b5efe27fd12b6a2fa3464df8080bd960aea2d9a2ba9&download_url=https://github.com/anchore/syft/releases/download/v1.57.0/syft_1.57.0_linux_ppc64le.tar.gz"
+    sha256 = "4d150f2bcb7eebad01fb1b5efe27fd12b6a2fa3464df8080bd960aea2d9a2ba9"
+    source = "https://github.com/anchore/syft/archive/refs/tags/v1.57.0.tar.gz"
+    source-checksum = "sha256:04f03d36dd080677127ca4b00eb3189d4447d5f9a26e7746f3011c66edf7a8a5"
+    stacks = ["*"]
+    uri = "https://github.com/anchore/syft/releases/download/v1.57.0/syft_1.57.0_linux_ppc64le.tar.gz"
+    version = "1.57.0"
 
     [[metadata.dependencies.licenses]]
       type = "Apache-2.0"
